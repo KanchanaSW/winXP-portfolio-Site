@@ -72,9 +72,14 @@ export function ProjectsWindow() {
         ))}
       </div>
       <div className="xp-explorer-status xp-bevel-inset">
-        {selected
-          ? selected.description
-          : `${portfolio.projects.length} object(s)`}
+        {selected ? (
+          <>
+            <div>{selected.description}</div>
+            <div>Tech Stack : {selected.tech.join(", ")}</div>
+          </>
+        ) : (
+          `${portfolio.projects.length} object(s)`
+        )}
       </div>
     </div>
   );
