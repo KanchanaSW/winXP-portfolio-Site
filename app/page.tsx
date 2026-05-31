@@ -96,7 +96,6 @@ export default function Home() {
               label={item.label}
               icon={item.icon}
               selected={selectedIconId === item.id}
-              onSelect={() => selectIcon(item.id)}
               onOpen={() => openWindow(item.id)}
             />
           ))}
