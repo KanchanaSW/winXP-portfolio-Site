@@ -1,101 +1,122 @@
-import Image from "next/image";
+"use client";
+
+import { useRef, useEffect, ReactNode } from "react";
+import { useDesktopStore, WindowId } from "@/stores/desktopStore";
+import { BootScreen } from "@/components/xp/BootScreen";
+import { DesktopIcon } from "@/components/xp/DesktopIcon";
+import { XPWindow } from "@/components/xp/XPWindow";
+import { Taskbar } from "@/components/xp/Taskbar";
+import { StartMenu } from "@/components/xp/StartMenu";
+import { XPContextMenu } from "@/components/xp/XPContextMenu";
+import { XPMessageBox } from "@/components/xp/XPMessageBox";
+import { DisplayPropertiesDialog } from "@/components/xp/DisplayPropertiesDialog";
+import { ShutdownDialog } from "@/components/xp/ShutdownDialog";
+import { WindowContent } from "@/components/windows/WindowContent";
+import {
+  FolderIcon,
+  UserIcon,
+  DocumentIcon,
+  EnvelopeIcon,
+  GearIcon,
+  GlobeIcon,
+} from "@/components/xp/icons";
+import { portfolio } from "@/portfolio.config";
+
+const DESKTOP_ICONS: {
+  id: WindowId;
+  label: string;
+  icon: ReactNode;
+}[] = [
+  { id: "projects", label: "My Projects", icon: <FolderIcon /> },
+  { id: "about", label: "About Me", icon: <UserIcon /> },
+  { id: "resume", label: "Resume.pdf", icon: <DocumentIcon /> },
+  { id: "contact", label: "Contact", icon: <EnvelopeIcon /> },
+  { id: "skills", label: "Skills", icon: <GearIcon /> },
+  ...(portfolio.blog
+    ? [{ id: "blog" as WindowId, label: "My Blog", icon: <GlobeIcon /> }]
+    : []),
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const {
+    windows,
+    bootComplete,
+    desktopReady,
+    selectedIconId,
+    setBootComplete,
+    setDesktopReady,
+    centerAboutWindow,
+    selectIcon,
+    openWindow,
+    showContextMenu,
+    hideContextMenu,
+    closeStartMenu,
+  } = useDesktopStore();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  useEffect(() => {
+    if (bootComplete && !desktopReady) {
+      centerAboutWindow(window.innerWidth, window.innerHeight);
+      setDesktopReady();
+    }
+  }, [bootComplete, desktopReady, centerAboutWindow, setDesktopReady]);
+
+  const handleDesktopClick = () => {
+    selectIcon(null);
+    hideContextMenu();
+    closeStartMenu();
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    showContextMenu(e.clientX, e.clientY);
+  };
+
+  if (!bootComplete) {
+    return <BootScreen onComplete={() => setBootComplete()} />;
+  }
+
+  const openWindowIds = (Object.keys(windows) as WindowId[]).filter(
+    (id) => windows[id].isOpen
+  );
+
+  return (
+    <div className="xp-desktop" onClick={handleDesktopClick}>
+      <div
+        ref={desktopRef}
+        className="absolute inset-0 bottom-8 z-0"
+        onContextMenu={handleContextMenu}
+        style={{ bottom: 32 }}
+      >
+        <div className="xp-desktop-icons">
+          {DESKTOP_ICONS.map((item) => (
+            <DesktopIcon
+              key={item.id}
+              id={item.id}
+              label={item.label}
+              icon={item.icon}
+              selected={selectedIconId === item.id}
+              onSelect={() => selectIcon(item.id)}
+              onOpen={() => openWindow(item.id)}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <div className="xp-windows-layer">
+          {openWindowIds.map((id) => (
+            <XPWindow key={id} id={id} desktopRef={desktopRef}>
+              <WindowContent id={id} />
+            </XPWindow>
+          ))}
+        </div>
+      </div>
+
+      <StartMenu />
+      <Taskbar />
+      <XPContextMenu />
+      <XPMessageBox />
+      <DisplayPropertiesDialog />
+      <ShutdownDialog />
     </div>
   );
 }

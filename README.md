@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Windows XP Portfolio
 
-## Getting Started
+A personal portfolio that simulates the Windows XP desktop in the browser.
 
-First, run the development server:
+## Stack
+
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS (layout/spacing only)
+- Vanilla CSS for XP chrome (`styles/xp.css`)
+- Framer Motion (window drag & animations)
+- Zustand (desktop/window state)
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Customize content
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Edit **[`portfolio.config.ts`](portfolio.config.ts)** — your name, bio, projects, skills, resume, blog posts, and contact email all live in one file.
 
-## Learn More
+Place your headshot at `public/images/photo.jpg` (or update the `photo` path in the config).
 
-To learn more about Next.js, take a look at the following resources:
+Optional fields not wired to the XP UI: `messages` (chat), `wallpaper` (macOS-style; desktop uses the default XP gradient).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Shutdown sound (optional)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Add a licensed `shutdown.mp3` to `public/sounds/` for the Turn Off Computer easter egg.
 
-## Deploy on Vercel
+## Build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build
+npm start
+```
