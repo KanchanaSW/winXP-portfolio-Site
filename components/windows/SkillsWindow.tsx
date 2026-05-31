@@ -10,7 +10,7 @@ const SKILL_SECTIONS = [
 
 export function SkillsWindow() {
   return (
-    <div className="p-3 text-[11px]">
+    <div className="p-2 sm:p-3 text-[11px]">
       {SKILL_SECTIONS.map((section) => (
         <fieldset key={section.title} className="xp-group-box">
           <legend className="xp-group-box-legend">{section.title}</legend>

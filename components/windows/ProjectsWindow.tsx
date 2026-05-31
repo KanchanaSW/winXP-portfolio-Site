@@ -4,10 +4,12 @@ import { useState } from "react";
 import { FolderIcon } from "@/components/xp/icons";
 import { XPButton } from "@/components/xp/XPButton";
 import { useDesktopStore } from "@/stores/desktopStore";
+import { useMobileViewport } from "@/lib/viewport";
 import { portfolio } from "@/portfolio.config";
 
 export function ProjectsWindow() {
   const { showMessageBox } = useDesktopStore();
+  const isMobile = useMobileViewport();
   const [selectedName, setSelectedName] = useState<string | null>(null);
 
   const selected = portfolio.projects.find((p) => p.name === selectedName);
@@ -23,9 +25,16 @@ export function ProjectsWindow() {
     }
   };
 
+  const handleProjectClick = (name: string) => {
+    setSelectedName(name);
+    if (isMobile) {
+      openProject(name);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full min-h-[360px]">
-      <div className="xp-explorer-toolbar">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="xp-explorer-toolbar flex-wrap gap-1">
         <XPButton disabled style={{ minWidth: 32, padding: "2px 8px" }}>
           ◀ Back
         </XPButton>
@@ -44,8 +53,11 @@ export function ProjectsWindow() {
         </XPButton>
       </div>
       <div className="xp-explorer-address">
-        <span className="font-bold">Address</span>
-        <div className="xp-input flex-1" style={{ display: "flex", alignItems: "center" }}>
+        <span className="font-bold shrink-0">Address</span>
+        <div
+          className="xp-input flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
+          style={{ display: "flex", alignItems: "center" }}
+        >
           C:\Portfolio\Projects
         </div>
       </div>
@@ -57,12 +69,12 @@ export function ProjectsWindow() {
               selectedName === p.name ? "bg-[#316AC5] text-white" : ""
             }`}
             title={p.description}
-            onClick={() => setSelectedName(p.name)}
+            onClick={() => handleProjectClick(p.name)}
             onDoubleClick={() => openProject(p.name)}
           >
             <FolderIcon size={48} />
             <span
-              className={`text-[11px] mt-2 ${
+              className={`text-[11px] mt-2 break-words ${
                 selectedName === p.name ? "text-white" : "group-hover:text-white"
               }`}
             >

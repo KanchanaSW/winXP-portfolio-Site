@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getDesktopBounds, isMobileViewport } from "@/lib/viewport";
 
 export type WindowId =
   | "about"
@@ -98,6 +99,8 @@ interface DesktopStore {
   setBootComplete: () => void;
   setDesktopReady: () => void;
   centerAboutWindow: (viewportW: number, viewportH: number) => void;
+  fitWindowToViewport: (id: WindowId) => void;
+  syncWindowsToViewport: () => void;
   selectIcon: (id: WindowId | null) => void;
   openWindow: (id: WindowId) => void;
   closeWindow: (id: WindowId) => void;
@@ -150,24 +153,107 @@ export const useDesktopStore = create<DesktopStore>((set, get) => ({
     }));
   },
 
+  fitWindowToViewport: (id) => {
+    const bounds = getDesktopBounds(TASKBAR_HEIGHT);
+    set((s) => {
+      const win = s.windows[id];
+      const preMaximize =
+        win.isMaximized && win.preMaximize
+          ? win.preMaximize
+          : {
+              position: { ...win.position },
+              size: { ...win.size },
+            };
+
+      return {
+        windows: {
+          ...s.windows,
+          [id]: {
+            ...win,
+            isMaximized: true,
+            preMaximize,
+            position: { x: 0, y: 0 },
+            size: { width: bounds.width, height: bounds.height },
+          },
+        },
+      };
+    });
+  },
+
+  syncWindowsToViewport: () => {
+    if (!isMobileViewport()) return;
+
+    const bounds = getDesktopBounds(TASKBAR_HEIGHT);
+    set((s) => {
+      const nextWindows = { ...s.windows };
+
+      for (const id of Object.keys(nextWindows) as WindowId[]) {
+        const win = nextWindows[id];
+        if (!win.isOpen || win.isMinimized) continue;
+
+        if (!win.isMaximized) {
+          nextWindows[id] = {
+            ...win,
+            isMaximized: true,
+            preMaximize: {
+              position: { ...win.position },
+              size: { ...win.size },
+            },
+            position: { x: 0, y: 0 },
+            size: { width: bounds.width, height: bounds.height },
+          };
+        } else {
+          nextWindows[id] = {
+            ...win,
+            position: { x: 0, y: 0 },
+            size: { width: bounds.width, height: bounds.height },
+          };
+        }
+      }
+
+      return { windows: nextWindows };
+    });
+  },
+
   selectIcon: (id) => set({ selectedIconId: id }),
 
   openWindow: (id) => {
     zIndexCounter += 1;
-    set((s) => ({
-      startMenuOpen: false,
-      selectedIconId: id,
-      activeWindowId: id,
-      windows: {
-        ...s.windows,
-        [id]: {
-          ...s.windows[id],
-          isOpen: true,
-          isMinimized: false,
-          zIndex: zIndexCounter,
+    const mobile = typeof window !== "undefined" && isMobileViewport();
+    const bounds = mobile ? getDesktopBounds(TASKBAR_HEIGHT) : null;
+
+    set((s) => {
+      const current = s.windows[id];
+      let nextWindow = {
+        ...current,
+        isOpen: true,
+        isMinimized: false,
+        zIndex: zIndexCounter,
+      };
+
+      if (mobile && bounds) {
+        nextWindow = {
+          ...nextWindow,
+          isMaximized: true,
+          preMaximize: {
+            position: { ...current.position },
+            size: { ...current.size },
+          },
+          position: { x: 0, y: 0 },
+          size: { width: bounds.width, height: bounds.height },
+        };
+      }
+
+      return {
+        startMenuOpen: false,
+        selectedIconId: id,
+        activeWindowId: id,
+        windows: {
+          ...s.windows,
+          [id]: nextWindow,
         },
-      },
-    }));
+      };
+    });
   },
 
   closeWindow: (id) => {
@@ -214,10 +300,7 @@ export const useDesktopStore = create<DesktopStore>((set, get) => ({
       return;
     }
 
-    const viewportW =
-      typeof window !== "undefined" ? window.innerWidth : 1024;
-    const viewportH =
-      typeof window !== "undefined" ? window.innerHeight : 768;
+    const bounds = getDesktopBounds(TASKBAR_HEIGHT);
 
     set((s) => ({
       windows: {
@@ -231,8 +314,8 @@ export const useDesktopStore = create<DesktopStore>((set, get) => ({
           },
           position: { x: 0, y: 0 },
           size: {
-            width: viewportW,
-            height: viewportH - TASKBAR_HEIGHT,
+            width: bounds.width,
+            height: bounds.height,
           },
         },
       },
@@ -276,17 +359,38 @@ export const useDesktopStore = create<DesktopStore>((set, get) => ({
     }
     if (win.isMinimized) {
       zIndexCounter += 1;
-      set((s) => ({
-        activeWindowId: id,
-        windows: {
-          ...s.windows,
-          [id]: {
-            ...s.windows[id],
-            isMinimized: false,
-            zIndex: zIndexCounter,
+      const mobile = typeof window !== "undefined" && isMobileViewport();
+      const bounds = mobile ? getDesktopBounds(TASKBAR_HEIGHT) : null;
+
+      set((s) => {
+        const current = s.windows[id];
+        let nextWindow = {
+          ...current,
+          isMinimized: false,
+          zIndex: zIndexCounter,
+        };
+
+        if (mobile && bounds) {
+          nextWindow = {
+            ...nextWindow,
+            isMaximized: true,
+            preMaximize: current.preMaximize ?? {
+              position: { ...current.position },
+              size: { ...current.size },
+            },
+            position: { x: 0, y: 0 },
+            size: { width: bounds.width, height: bounds.height },
+          };
+        }
+
+        return {
+          activeWindowId: id,
+          windows: {
+            ...s.windows,
+            [id]: nextWindow,
           },
-        },
-      }));
+        };
+      });
     } else {
       get().focusWindow(id);
     }

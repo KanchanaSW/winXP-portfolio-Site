@@ -56,6 +56,7 @@ body {
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: linear-gradient(
     180deg,
@@ -797,4 +798,53 @@ a {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.2);
+  padding: 8px;
+}
+
+@media (max-width: 767px) {
+  .xp-taskbar {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .xp-taskbar-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .xp-taskbar-tab {
+    min-width: 80px;
+    max-width: 120px;
+    flex-shrink: 0;
+  }
+
+  .xp-start-menu {
+    width: min(280px, 100vw);
+  }
+
+  .xp-resize-handle {
+    display: none;
+  }
+
+  .xp-desktop-icons {
+    display: grid;
+    grid-template-columns: repeat(2, 72px);
+    gap: 16px 12px;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    max-height: calc(100% - 8px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .xp-window--mobile {
+    border-width: 2px;
+    box-shadow: none;
+  }
+
+  .xp-message-box {
+    width: min(300px, calc(100vw - 16px));
+    max-width: calc(100vw - 16px);
+  }
 }

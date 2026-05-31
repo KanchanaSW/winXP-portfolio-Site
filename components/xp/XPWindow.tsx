@@ -7,6 +7,7 @@ import {
   WindowId,
   TASKBAR_HEIGHT,
 } from "@/stores/desktopStore";
+import { useMobileViewport } from "@/lib/viewport";
 import { WINDOW_ICONS } from "./icons";
 
 interface XPWindowProps {
@@ -20,6 +21,7 @@ const MIN_HEIGHT = 160;
 
 export function XPWindow({ id, children, desktopRef }: XPWindowProps) {
   const dragControls = useDragControls();
+  const isMobile = useMobileViewport();
   const {
     windows,
     activeWindowId,
@@ -34,6 +36,7 @@ export function XPWindow({ id, children, desktopRef }: XPWindowProps) {
   const win = windows[id];
   const isActive = activeWindowId === id;
   const icon = WINDOW_ICONS[id];
+  const canDrag = !win.isMaximized && !isMobile;
 
   const handleResizeStart = useCallback(
     (e: React.MouseEvent) => {
@@ -86,7 +89,7 @@ export function XPWindow({ id, children, desktopRef }: XPWindowProps) {
     <AnimatePresence>
       <motion.div
         key={id}
-        className="xp-window"
+        className={`xp-window${isMobile ? " xp-window--mobile" : ""}`}
         style={{
           left: win.position.x,
           top: win.position.y,
@@ -99,13 +102,13 @@ export function XPWindow({ id, children, desktopRef }: XPWindowProps) {
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ duration: 0.1 }}
         onMouseDown={() => focusWindow(id)}
-        drag={!win.isMaximized}
+        drag={canDrag}
         dragControls={dragControls}
         dragListener={false}
         dragMomentum={false}
         dragElastic={0}
         onDragEnd={(_, info) => {
-          if (win.isMaximized) return;
+          if (!canDrag) return;
           const next = clampPosition(
             win.position.x + info.offset.x,
             win.position.y + info.offset.y
@@ -116,12 +119,12 @@ export function XPWindow({ id, children, desktopRef }: XPWindowProps) {
         <div
           className={`xp-title-bar ${isActive ? "" : "xp-title-bar--inactive"}`}
           onPointerDown={(e) => {
-            if (!win.isMaximized) {
+            if (canDrag) {
               dragControls.start(e);
             }
             focusWindow(id);
           }}
-          style={{ cursor: win.isMaximized ? "default" : "default" }}
+          style={{ cursor: canDrag ? "default" : "default" }}
         >
           <div className="xp-title-bar-left">
             <span className="xp-title-bar-icon">{icon}</span>
@@ -176,7 +179,7 @@ export function XPWindow({ id, children, desktopRef }: XPWindowProps) {
           <div className="xp-window-content xp-scrollbar">{children}</div>
         </div>
 
-        {!win.isMaximized && (
+        {!win.isMaximized && !isMobile && (
           <div
             className="xp-resize-handle"
             onMouseDown={handleResizeStart}

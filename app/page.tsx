@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, ReactNode } from "react";
 import { useDesktopStore, WindowId } from "@/stores/desktopStore";
+import { isMobileViewport } from "@/lib/viewport";
 import { BootScreen } from "@/components/xp/BootScreen";
 import { DesktopIcon } from "@/components/xp/DesktopIcon";
 import { XPWindow } from "@/components/xp/XPWindow";
@@ -47,6 +48,8 @@ export default function Home() {
     setBootComplete,
     setDesktopReady,
     centerAboutWindow,
+    fitWindowToViewport,
+    syncWindowsToViewport,
     selectIcon,
     openWindow,
     showContextMenu,
@@ -56,10 +59,30 @@ export default function Home() {
 
   useEffect(() => {
     if (bootComplete && !desktopReady) {
-      centerAboutWindow(window.innerWidth, window.innerHeight);
+      if (isMobileViewport()) {
+        fitWindowToViewport("about");
+      } else {
+        centerAboutWindow(window.innerWidth, window.innerHeight);
+      }
       setDesktopReady();
     }
-  }, [bootComplete, desktopReady, centerAboutWindow, setDesktopReady]);
+  }, [
+    bootComplete,
+    desktopReady,
+    centerAboutWindow,
+    fitWindowToViewport,
+    setDesktopReady,
+  ]);
+
+  useEffect(() => {
+    const onResize = () => syncWindowsToViewport();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, [syncWindowsToViewport]);
 
   const handleDesktopClick = () => {
     selectIcon(null);

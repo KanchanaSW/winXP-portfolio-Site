@@ -17,8 +17,8 @@ export function BlogWindow() {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-[360px]">
-      <div className="xp-explorer-toolbar">
+    <div className="flex flex-col h-full min-h-0 sm:min-h-[360px]">
+      <div className="xp-explorer-toolbar flex-wrap gap-1">
         <XPButton
           style={{ minWidth: 48, padding: "2px 8px" }}
           onClick={openHome}
@@ -39,15 +39,15 @@ export function BlogWindow() {
         </XPButton>
       </div>
       <div className="xp-explorer-address">
-        <span className="font-bold">Address</span>
+        <span className="font-bold shrink-0">Address</span>
         <div
-          className="xp-input flex-1"
+          className="xp-input flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap"
           style={{ display: "flex", alignItems: "center" }}
         >
           {portfolio.blog}
         </div>
       </div>
-      <div className="flex-1 p-4 xp-scrollbar overflow-auto text-[11px] bg-white mx-1 mb-1 xp-bevel-inset">
+      <div className="flex-1 p-4 xp-scrollbar overflow-auto text-[11px] bg-white mx-1 mb-1 xp-bevel-inset min-h-0">
         <h2 className="text-base font-bold m-0 mb-1">{portfolio.blogTitle}</h2>
         <p className="m-0 mb-4 text-[#666] leading-relaxed">
           {portfolio.blogDescription}
@@ -58,7 +58,7 @@ export function BlogWindow() {
             <li key={post.url} className="mb-2">
               <button
                 type="button"
-                className="text-[#0000EE] underline text-left bg-transparent border-0 p-0 cursor-pointer font-inherit text-inherit"
+                className="text-[#0000EE] underline text-left bg-transparent border-0 p-0 cursor-pointer font-inherit text-inherit break-words"
                 onClick={() =>
                   window.open(post.url, "_blank", "noopener")
                 }
@@ -70,7 +70,7 @@ export function BlogWindow() {
         </ul>
       </div>
       <div className="xp-explorer-status xp-bevel-inset">
-        {portfolio.blogPosts.length} article(s) — Double-click Home to visit blog
+        {portfolio.blogPosts.length} article(s) — Tap Home to visit blog
       </div>
     </div>
   );

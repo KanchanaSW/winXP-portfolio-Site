@@ -28,7 +28,7 @@ export function ContactWindow() {
   };
 
   return (
-    <div className="p-4 text-[11px] flex flex-col gap-3">
+    <div className="p-3 sm:p-4 text-[11px] flex flex-col gap-3">
       <div>
         <label className="block mb-1">Name:</label>
         <XPInput
@@ -54,11 +54,13 @@ export function ContactWindow() {
           placeholder="Type your message..."
         />
       </div>
-      <div className="flex justify-end gap-2 mt-2">
-        <XPButton variant="primary" onClick={handleSend}>
+      <div className="flex flex-col sm:flex-row justify-end gap-2 mt-2">
+        <XPButton variant="primary" className="w-full sm:w-auto" onClick={handleSend}>
           Send Message
         </XPButton>
-        <XPButton onClick={handleCancel}>Cancel</XPButton>
+        <XPButton className="w-full sm:w-auto" onClick={handleCancel}>
+          Cancel
+        </XPButton>
       </div>
     </div>
   );
